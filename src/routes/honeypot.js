@@ -124,9 +124,10 @@ router.post('/', async (req, res) => {
         }
 
         // 4. PREPARE FINAL RESPONSE
-        // Simulate safe typing delay (Max 1s to avoid timeouts in testers)
+        // Simulate safe typing delay (realistic human speed)
         if (response.agentResponse) {
-            const safeDelay = Math.min(aiAgent.calculateTypingDelay(response.agentResponse), 1000);
+            // Use the full calculated delay (1.5s - 10s) based on message length
+            const safeDelay = aiAgent.calculateTypingDelay(response.agentResponse);
             await new Promise(r => setTimeout(r, safeDelay));
         }
 

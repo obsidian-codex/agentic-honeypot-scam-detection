@@ -7,23 +7,82 @@
  */
 
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const Groq = require('groq-sdk');
 const logger = require('../utils/logger');
 const { getAgentResponsePrompt, selectPersona, PERSONAS } = require('../config/prompts');
 const sessionManager = require('./sessionManager');
 
 let genAI = null;
 let model = null;
+let groq = null;
 
 function initializeAI() {
     if (!genAI && process.env.GEMINI_API_KEY) {
-        genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-        model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
-        logger.info('AI Agent ready');
+        try {
+            genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+            model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+            logger.info('Gemini AI Agent ready');
+        } catch (e) {
+            logger.error('Failed to init Gemini', { error: e.message });
+        }
+    }
+
+    if (!groq && process.env.GROQ_API_KEY) {
+        try {
+            groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+            logger.info('Groq AI Fallback ready');
+        } catch (e) {
+            logger.error('Failed to init Groq', { error: e.message });
+        }
     }
 }
 
 // backup responses when AI isnt working - made to look like real texts
+// backup responses when AI isnt working - made to look like real texts
 const FALLBACK_RESPONSES = {
+    // 1. BANK ACCOUNT BLOCK / KYC / OTP (Merged category for banking issues)
+    bank_fraud: [
+        // Blocked Account
+        "Wait what? blocked? I just used it yesterday 😟 what happened?",
+        "Oh god… how do I stop it from getting blocked?",
+        "Can you tell me what I need to do exactly?",
+        "is this for real?? i rely on that account for everything",
+        "shud i go to the branch? or can u help me here",
+
+        // KYC
+        "KYC? I thought it was already done last year",
+        "Can you explain how to update it? I’m not very good with this",
+        "Do I need to go to bank or is this online?",
+        "is it mandatory? i dont want my account frozen",
+
+        // OTP / Verification
+        "OTP? I just got some message… where do I enter it?",
+        "Is this normal? I’ve never done verification like this before",
+        "Do I need to send it here or somewhere else?",
+        "ok i see a code.. shud i share it with u?"
+    ],
+
+    // 2. UPI / PAYMENT REQUEST
+    upi_fraud: [
+        "Why payment? I thought verification was free?",
+        "which app shud i use? GPay or PhonePe?",
+        "Can you send UPI again properly? it failed last time",
+        "im confused.. do i pay u or u pay me?",
+        "ok wait let me check balance first..",
+        "whats the steps? guide me pls"
+    ],
+
+    // 3. LINKS / PHISHING
+    phishing: [
+        "What is this link for? looks kinda weird",
+        "It’s asking for details… is this safe?",
+        "Should I open it now? im using mobile data",
+        "it says warning.. are u sure its correct link?",
+        "ok clicking it.. wait its loading slow",
+        "do i need to login there?"
+    ],
+
+    // 4. LOTTERY / PRIZE (Keep existing)
     lottery: [
         "OMG really?? ive never won anythng before! How do i claim it",
         "This is amazng!! wat do i need to do?",
@@ -31,35 +90,22 @@ const FALLBACK_RESPONSES = {
         "i cant believe it!! whats the next step",
         "omg omg this is so exciting!! how do i get my prize"
     ],
-    upi_fraud: [
-        "Oh ok im a bit confused abt UPI. can u guide me step by step?",
-        "i want to do this but im not sure how.. whats ur UPI ID again",
-        "shud i send it now? just making sure i have right details",
-        "my son usually helps w these things. can u explain simply",
-        "ok wait let me check.. so i have to send to which upi"
-    ],
-    bank_fraud: [
-        "Oh no my account is blocked?? wat shud i do",
-        "this is scary!! can u help me fix it pls",
-        "i dont want to lose my money! tell me wat to do",
-        "shud i call my bank? or will u help me directly",
-        "omg i didnt know abt this.. how to unblock it"
-    ],
-    phishing: [
-        "is this link safe? i want to make sure b4 clicking",
-        "ok lemme check.. wat will i see wen i open it",
-        "im on my phone. will it work there too?",
-        "let me try opening it. wat shud i enter",
-        "ok one sec im clicking now.. its loading"
-    ],
+
+    // 5. OTHER / GENERIC
     other: [
-        "that sounds intersting! can u tell me more abt it",
-        "im not sure i understand.. can u explain",
-        "ok wat do i need to do",
-        "this seems like a good opportunity.. whats next",
-        "hmm ok tell me more abt how this works"
+        "im a bit busy right now but tell me more",
+        "i dont understand.. can u explain simply",
+        "who is this exactly?",
+        "is this urgent? shud i call u?",
+        "ok.. what next?"
     ]
 };
+
+// pick a random fallback
+function getFallbackResponse(scamType) {
+    const responses = FALLBACK_RESPONSES[scamType] || FALLBACK_RESPONSES.other;
+    return responses[Math.floor(Math.random() * responses.length)];
+}
 
 // adds typos n stuff to make responses look more human
 function humanizeResponse(text) {
@@ -131,115 +177,131 @@ function humanizeResponse(text) {
     return result;
 }
 
-// pick a random fallback
-function getFallbackResponse(scamType) {
-    const responses = FALLBACK_RESPONSES[scamType] || FALLBACK_RESPONSES.other;
-    return responses[Math.floor(Math.random() * responses.length)];
-}
-
-// generate response using AI - this is where Gemini gets called
+// ============================================================================
+// MAIN HANDLER: ORCHESTRATES LLM CALLS
+// Strategy: Try Gemini -> Catch Error -> Try Groq -> Catch Error -> Template
+// ============================================================================
 async function generateResponse(session, message, metadata = {}) {
     initializeAI();
 
-    // pick or reuse persona for this session
+    // 1. SELECT PERSONA
     const persona = session.persona
         ? PERSONAS[Object.keys(PERSONAS).find(k => PERSONAS[k].name === session.persona)]
         : selectPersona(session.scamType || 'other');
 
-    // save persona to session so we use the same one throughout
     if (!session.persona) {
-        sessionManager.setScamDetected(
-            session.sessionId,
-            session.scamDetected,
-            session.scamType,
-            persona.name
-        );
+        sessionManager.setScamDetected(session.sessionId, session.scamDetected, session.scamType, persona.name);
     }
 
-    // no gemini? use the fallback responses
-    if (!model) {
-        logger.warn('No AI, using fallback');
+    const systemPrompt = buildSystemPrompt(persona, session.scamType);
+    let rawResponse = null;
+    let providerUsed = 'none';
+
+    // 2. TRY PRIMARY (GEMINI)
+    if (model) {
+        try {
+            rawResponse = await callGeminiProvider(model, session.conversationHistory, message.text, systemPrompt);
+            providerUsed = 'gemini';
+        } catch (err) {
+            logger.warn('Gemini failed, switching to fallback', { error: err.message });
+        }
+    }
+
+    // 3. TRY SECONDARY (GROQ) IF GEMINI FAILED
+    if (!rawResponse && groq) {
+        try {
+            rawResponse = await callGroqProvider(groq, session.conversationHistory, message.text, systemPrompt);
+            providerUsed = 'groq';
+        } catch (err) {
+            logger.warn('Groq failed, switching to template', { error: err.message });
+        }
+    }
+
+    // 4. FALLBACK TO TEMPLATE IF ALL AI FAILED
+    if (!rawResponse) {
+        logger.error('All AI providers failed. Using static fallback.');
+        const fallback = getFallbackResponse(session.scamType || 'other');
+        // add delay to fallback too so it feels real
+        return fallback;
+    }
+
+    // 5. POST-PROCESSING (Clean & Humanize)
+    let finalResponse = cleanAIOutput(rawResponse);
+
+    // Check for character break
+    if (hasBrokenCharacter(finalResponse)) {
+        logger.warn(`AI (${providerUsed}) broke character. Using template.`);
         return getFallbackResponse(session.scamType || 'other');
     }
 
-    try {
-        // ====================================================
-        // BUILD THE MULTI-TURN CONVERSATION FOR GEMINI
-        // ====================================================
-        // Gemini works best when you give it proper role structure:
-        //   - 'user' = messages FROM the scammer
-        //   - 'model' = our previous responses
-        // This way Gemini "remembers" the conversation naturally
+    // Add typos/lowercase
+    finalResponse = humanizeResponse(finalResponse);
 
-        const systemInstruction = buildSystemPrompt(persona, session.scamType);
-
-        // convert our chat history to Gemini's format
-        const chatHistory = buildGeminiHistory(session.conversationHistory);
-
-        // start a chat with history so gemini knows whats been said
-        const chat = model.startChat({
-            history: chatHistory,
-            generationConfig: {
-                temperature: 0.85,    // natural variety without going crazy
-                topP: 0.9,
-                topK: 40,
-                maxOutputTokens: 120, // keep it short like real texts
-            },
-            systemInstruction: systemInstruction
-        });
-
-        // send the latest message and get response
-        const result = await chat.sendMessage(message.text);
-        let response = result.response.text().trim();
-
-        // ====================================================
-        // POST-PROCESSING - clean up the AI output
-        // ====================================================
-
-        // strip quotes if gemini wrapped the response
-        if ((response.startsWith('"') && response.endsWith('"')) ||
-            (response.startsWith("'") && response.endsWith("'"))) {
-            response = response.slice(1, -1);
-        }
-
-        // safety check - make sure we didnt accidentally break character
-        const badPhrases = [
-            'as an ai', 'i am an ai', 'language model', 'i\'m a bot',
-            'i cannot', 'i\'m not able', 'this is a scam', 'you\'re trying to scam',
-            'i\'m here to help', 'how can i assist', 'as a honeypot'
-        ];
-
-        const lowerResponse = response.toLowerCase();
-        if (badPhrases.some(phrase => lowerResponse.includes(phrase))) {
-            logger.warn('AI broke character, using fallback');
-            return getFallbackResponse(session.scamType || 'other');
-        }
-
-        // trim long responses - real people dont write essays in chat
-        if (response.length > 180) {
-            const sentences = response.match(/[^.!?]+[.!?]+/g) || [response];
-            response = sentences.slice(0, 2).join(' ').trim();
-        }
-
-        // add human imperfections (typos, abbreviations)
-        response = humanizeResponse(response);
-
-        logger.info('AI response generated', {
-            persona: persona.name,
-            historyLength: chatHistory.length,
-            responseLength: response.length
-        });
-
-        return response;
-
-    } catch (error) {
-        logger.error('AI generation failed', { error: error.message });
-        return getFallbackResponse(session.scamType || 'other');
-    }
+    logger.info('Response generated', { provider: providerUsed, length: finalResponse.length });
+    return finalResponse;
 }
 
-// builds the system prompt that sets up the persona
-// this tells gemini WHO it should be and HOW to behave
+// ----------------------------------------------------------------------------
+// PROVIDER IMPLEMENTATIONS
+// ----------------------------------------------------------------------------
+
+async function callGeminiProvider(modelInstance, history, userMsg, systemMsg) {
+    const chatHistory = buildGeminiHistory(history);
+
+    const chat = modelInstance.startChat({
+        history: chatHistory,
+        generationConfig: {
+            temperature: 0.9,
+            maxOutputTokens: 150, // Keep short for SMS
+        },
+        systemInstruction: systemMsg
+    });
+
+    const result = await chat.sendMessage(userMsg);
+    return result.response.text();
+}
+
+async function callGroqProvider(groqInstance, history, userMsg, systemMsg) {
+    const messages = buildGroqHistory(history, userMsg, systemMsg);
+
+    const completion = await groqInstance.chat.completions.create({
+        messages: messages,
+        model: "llama-3.3-70b-versatile", // Fast & Good
+        temperature: 0.9,
+        max_tokens: 150,
+        top_p: 1,
+        stop: null,
+        stream: false
+    });
+
+    return completion.choices[0]?.message?.content || "";
+}
+
+// ----------------------------------------------------------------------------
+// HELPERS
+// ----------------------------------------------------------------------------
+
+function cleanAIOutput(text) {
+    if (!text) return "";
+    let clean = text.trim();
+    // Remove quotes
+    if ((clean.startsWith('"') && clean.endsWith('"')) || (clean.startsWith("'") && clean.endsWith("'"))) {
+        clean = clean.slice(1, -1);
+    }
+    // Remove prefixes like "Agent:" or "Reply:"
+    clean = clean.replace(/^(Agent|Bot|Response|Reply):/i, "").trim();
+    return clean;
+}
+
+function hasBrokenCharacter(text) {
+    const badPhrases = [
+        'as an ai', 'i am an ai', 'language model', 'i\'m a bot',
+        'i cannot', 'i\'m not able', 'this is a scam', 'honeypot'
+    ];
+    return badPhrases.some(p => text.toLowerCase().includes(p));
+}
+
+// builds the system prompt ...
 function buildSystemPrompt(persona, scamType) {
     return `You are roleplaying as "${persona.name}". ${persona.description}
 
@@ -248,37 +310,46 @@ CRITICAL RULES - FOLLOW EXACTLY:
 2. Keep responses SHORT (1-2 sentences max). Nobody writes paragraphs in chat.
 3. Use casual language. Abbreviate words like "u" "ur" "pls" "thx" "wat" sometimes.
 4. Show genuine interest/confusion/excitement depending on what they say.
-5. NEVER mention AI, bots, scams, honeypots, or detection. You know NOTHING about those.
-6. NEVER start with "Hi" or greetings in follow-up messages, youre mid-conversation.
+5. NEVER mention AI, bots, scams, honeypot, or detection. You know NOTHING about those.
+6. NEVER start with "Hi" or greetings in follow-up messages.
 7. NEVER repeat what you already said. Read the chat history.
-8. If they ask for money/info, act confused but curious, ask "how" or "where do i send".
-9. Match their language - if they write in Hindi/Hinglish, reply in same style.
-10. You can make small typos or forget punctuation - youre typing fast on phone.
+8. If they ask for money, act confused but curious (e.g., "where do i send?").
+9. Match their language style.
+10. You can make small typos.
 
 Your personality traits: ${persona.traits.join(', ')}
 
-Remember: You want to keep them talking so they reveal more details (UPI, phone, links).`;
+Goal: Keep them talking so they reveal details (UPI, phone, links).`;
 }
 
-// converts our conversation history to gemini's format
-// gemini needs alternating 'user' and 'model' roles
+// Gemini Format: role='user'|'model'
 function buildGeminiHistory(history) {
     if (!history || history.length === 0) return [];
-
     const geminiHistory = [];
-
     for (const msg of history) {
-        // scammer messages = 'user' in gemini terms
-        // our agent messages = 'model' in gemini terms
+        // Skip system/internal messages if any
+        if (!msg.text) continue;
         const role = msg.sender === 'agent' ? 'model' : 'user';
+        geminiHistory.push({ role, parts: [{ text: msg.text }] });
+    }
+    return geminiHistory;
+}
 
-        geminiHistory.push({
-            role: role,
-            parts: [{ text: msg.text }]
-        });
+// Groq/OpenAI Format: role='user'|'assistant'|'system'
+function buildGroqHistory(history, currentMsg, systemMsg) {
+    const messages = [
+        { role: "system", content: systemMsg }
+    ];
+
+    if (history && history.length > 0) {
+        for (const msg of history) {
+            const role = msg.sender === 'agent' ? 'assistant' : 'user';
+            messages.push({ role, content: msg.text });
+        }
     }
 
-    return geminiHistory;
+    messages.push({ role: "user", content: currentMsg });
+    return messages;
 }
 
 // generate summary notes abt the conversation
