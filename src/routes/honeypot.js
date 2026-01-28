@@ -22,6 +22,25 @@ const evidenceStore = require('../services/evidenceStore');
 router.post('/', async (req, res) => {
     const startTime = Date.now();
 
+    // Default response structure to ensure we never return empty
+    let response = {
+        status: 'success',
+        scamDetected: false,
+        engagementMetrics: {
+            engagementDurationSeconds: 0,
+            totalMessagesExchanged: 0
+        },
+        extractedIntelligence: {
+            bankAccounts: [],
+            upiIds: [],
+            phishingLinks: [],
+            phoneNumbers: [],
+            suspiciousKeywords: []
+        },
+        agentNotes: 'Initializing analysis...',
+        agentResponse: null
+    };
+
     try {
         const { sessionId, message, conversationHistory = [], metadata = {} } = req.body;
 
@@ -33,115 +52,117 @@ router.post('/', async (req, res) => {
             return res.status(400).json({ status: 'error', error: 'Missing message.text' });
         }
 
-        logger.info('Processing message', {
-            sessionId,
-            sender: message.sender,
-            textLength: message.text.length
-        });
+        // log incoming
+        logger.info('Processing message', { sessionId, length: message.text.length });
 
         // get or create session
         const session = sessionManager.getOrCreateSession(sessionId);
 
-        // sync history if incoming has more context
+        // sync history if needed
         if (conversationHistory.length > session.conversationHistory.length) {
             session.conversationHistory = conversationHistory;
         }
 
-        // extract any intel from this message
+        // 1. EXTRACT INTELLIGENCE (Always run this first)
         const newIntel = intelligenceExtractor.extract(message.text);
         sessionManager.addIntelligence(sessionId, newIntel);
 
-        // check if it's a scam
-        const detection = await scamDetector.analyze(message.text, session.conversationHistory);
+        // 2. DETECT SCAM
+        let detection = { isScam: false, method: 'pattern', confidence: 0, scamType: 'unknown' };
+        try {
+            detection = await scamDetector.analyze(message.text, session.conversationHistory);
+        } catch (err) {
+            logger.error('Scam detection error', { error: err.message });
+            // Fallback to extraction-based detection
+            const score = intelligenceExtractor.getScamScore(message.text);
+            if (score.score > 50) {
+                detection = { isScam: true, method: 'fallback', confidence: 0.5, scamType: 'suspicious' };
+            }
+        }
 
-        // update session if scam detected
+        // Update session with detection results
         if (detection.isScam && !session.scamDetected) {
             sessionManager.setScamDetected(sessionId, true, detection.scamType, null);
         }
 
-        const updatedSession = sessionManager.getSession(sessionId);
-
-        // setup our response variables
-        let agentResponse = null;
-        let agentNotes = '';
-
+        // 3. AGENT ENGAGEMENT
         const sessionSnapshot = sessionManager.getSession(sessionId);
         const shouldStop = sessionSnapshot.isComplete || sessionSnapshot.callbackSent || sessionManager.shouldComplete(sessionId);
 
-        // generate response if scam detected AND we haven't reached the stopping point
+        // Decide: generate response or stop?
         if ((detection.isScam || sessionSnapshot.scamDetected) && !shouldStop) {
-            agentResponse = await aiAgent.generateResponse(sessionSnapshot, message, metadata);
-            sessionManager.addMessage(sessionId, message, agentResponse);
-            agentNotes = aiAgent.generateAgentNotes(sessionManager.getSession(sessionId));
+
+            // Generate AI response
+            try {
+                const aiResponse = await aiAgent.generateResponse(sessionSnapshot, message, metadata);
+                response.agentResponse = aiResponse;
+                sessionManager.addMessage(sessionId, message, aiResponse);
+                response.agentNotes = aiAgent.generateAgentNotes(sessionManager.getSession(sessionId));
+            } catch (err) {
+                logger.error('Agent generation error', { error: err.message });
+                sessionManager.addMessage(sessionId, message);
+                response.agentNotes = 'Agent generation failed, logged message only.';
+            }
+
         } else if (shouldStop) {
-            // make sure it's actually marked as complete in the manager
+            // Stop condition met
             if (!sessionSnapshot.isComplete) {
-                logger.info('Autonomous stopping triggered: goal reached.', { sessionId });
                 sessionManager.markComplete(sessionId);
             }
             sessionManager.addMessage(sessionId, message);
-            agentNotes = 'Intelligence target reached. Session complete.';
+            response.agentNotes = 'Intelligence target reached or conversation complete. Agent disengaged.';
+
+            // Trigger callback if it's the Moment of Completion
+            if (detection.isScam) {
+                guviCallback.sendFinalResult(sessionId, sessionManager.getSession(sessionId))
+                    .catch(e => logger.error('Callback error', { error: e.message }));
+            }
         } else {
+            // No scam detected
             sessionManager.addMessage(sessionId, message);
-            agentNotes = 'No scam detected. Message looks legitimate.';
+            response.agentNotes = 'No scam detected. Monitoring only.';
         }
 
+        // 4. PREPARE FINAL RESPONSE
+        // Simulate safe typing delay (Max 1s to avoid timeouts in testers)
+        if (response.agentResponse) {
+            const safeDelay = Math.min(aiAgent.calculateTypingDelay(response.agentResponse), 1000);
+            await new Promise(r => setTimeout(r, safeDelay));
+        }
+
+        // Get final session state
         const finalSession = sessionManager.getSession(sessionId);
 
-        // send callback to GUVI if we have enough
-        if (detection.isScam && sessionManager.shouldComplete(sessionId)) {
-            guviCallback.sendFinalResult(sessionId, finalSession)
-                .then(result => {
-                    if (result.success) logger.info('GUVI callback done', { sessionId });
-                })
-                .catch(err => logger.error('GUVI callback error', { error: err.message }));
-
-            sessionManager.markComplete(sessionId);
-        }
-
-        // log to persistent storage so we dont lose this data
-        await evidenceStore.logSession(finalSession);
-
-        // simulate typing delay to look human
-        if (agentResponse) {
-            const delay = aiAgent.calculateTypingDelay(agentResponse, finalSession.persona);
-            logger.info(`Simulating typing delay`, { sessionId, ms: delay });
-            await new Promise(resolve => setTimeout(resolve, delay));
-        }
-
-        const responseTime = Date.now() - startTime;
-
-        // build response
-        const response = {
-            status: 'success',
-            scamDetected: finalSession.scamDetected,
-            agentResponse: agentResponse,
-            engagementMetrics: {
-                engagementDurationSeconds: sessionManager.getEngagementDuration(sessionId),
-                totalMessagesExchanged: finalSession.messageCount
-            },
-            extractedIntelligence: {
-                bankAccounts: finalSession.extractedIntelligence.bankAccounts,
-                upiIds: finalSession.extractedIntelligence.upiIds,
-                phishingLinks: finalSession.extractedIntelligence.phishingLinks,
-                phoneNumbers: finalSession.extractedIntelligence.phoneNumbers,
-                suspiciousKeywords: finalSession.extractedIntelligence.suspiciousKeywords
-            },
-            agentNotes: agentNotes,
-            _meta: {
-                responseTimeMs: responseTime,
-                detectionMethod: detection.method,
-                confidence: detection.confidence,
-                scamType: detection.scamType
-            }
+        // Populate the safe response object with real data
+        response.scamDetected = !!finalSession.scamDetected; // force boolean
+        response.engagementMetrics = {
+            engagementDurationSeconds: sessionManager.getEngagementDuration(sessionId) || 0,
+            totalMessagesExchanged: finalSession.messageCount || 0
+        };
+        response.extractedIntelligence = {
+            bankAccounts: finalSession.extractedIntelligence.bankAccounts || [],
+            upiIds: finalSession.extractedIntelligence.upiIds || [],
+            phishingLinks: finalSession.extractedIntelligence.phishingLinks || [],
+            phoneNumbers: finalSession.extractedIntelligence.phoneNumbers || [],
+            suspiciousKeywords: finalSession.extractedIntelligence.suspiciousKeywords || []
         };
 
-        logger.info('Response sent', { sessionId, scamDetected: response.scamDetected, ms: responseTime });
+        // Send succesful response
+        logger.info('Request processed', { sessionId, status: 'success' });
         return res.json(response);
 
     } catch (error) {
-        logger.error('Error', { error: error.message, stack: error.stack });
-        return res.status(500).json({ status: 'error', error: 'Internal error', message: error.message });
+        logger.error('Critical API Error', { error: error.message, stack: error.stack });
+
+        // Even in error, return the partial response structure if possible, or a strict error JSON
+        return res.status(500).json({
+            status: 'error',
+            error: 'Internal processing error',
+            message: error.message,
+            // Return empty structure so clients dont crash
+            engagementMetrics: response.engagementMetrics,
+            extractedIntelligence: response.extractedIntelligence
+        });
     }
 });
 

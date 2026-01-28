@@ -642,6 +642,40 @@
       "isComplete": true,
       "callbackSent": false,
       "lastUpdated": "2026-01-28T08:10:06.595Z"
+    },
+    "struct-test-01": {
+      "sessionId": "struct-test-01",
+      "scamDetected": true,
+      "scamType": "bank_fraud",
+      "persona": "Elderly Person",
+      "conversationHistory": [
+        {
+          "sender": "scammer",
+          "text": "Verify your account now!",
+          "timestamp": "2024-01-28T10:00:00Z"
+        },
+        {
+          "sender": "agent",
+          "text": "this is scary!! can u help me fix it pls",
+          "timestamp": "2026-01-28T08:49:22.898Z"
+        }
+      ],
+      "extractedIntelligence": {
+        "bankAccounts": [],
+        "upiIds": [],
+        "phishingLinks": [],
+        "phoneNumbers": [],
+        "suspiciousKeywords": [
+          "now",
+          "verify",
+          "account"
+        ]
+      },
+      "startTime": 1769590162087,
+      "messageCount": 2,
+      "isComplete": false,
+      "callbackSent": false,
+      "lastUpdated": "2026-01-28T08:49:22.898Z"
     }
   },
   "masterIntel": {
@@ -689,5 +723,5 @@
       "immediately"
     ]
   },
-  "totalScamsDetected": 14
+  "totalScamsDetected": 15
 }
