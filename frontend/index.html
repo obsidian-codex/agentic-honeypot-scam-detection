@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Honeypot OS 🍯 | Advanced Scam Debugger</title>
+    <!-- Using Inter for that premium, modern feel -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #05070a;
+            --glass-bg: rgba(17, 25, 40, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --accent-blue: #38bdf8;
+            --accent-green: #4ade80;
+            --accent-red: #f87171;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --sidebar-width: 280px;
+            --panel-width: 320px;
+            --scammer-bubble: #1e1b4b;
+            --agent-bubble: #064e3b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+            scrollbar-width: thin;
+            scrollbar-color: var(--glass-border) transparent;
+        }
+
+        body {
+            background-color: var(--bg-deep);
+            background-image:
+                radial-gradient(at 0% 0%, hsla(210, 100%, 10%, 1) 0, transparent 50%),
+                radial-gradient(at 50% 0%, hsla(225, 100%, 10%, 1) 0, transparent 50%),
+                radial-gradient(at 100% 0%, hsla(240, 100%, 10%, 1) 0, transparent 50%);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+            letter-spacing: -0.01em;
+        }
+
+        /* --- LEFT SIDEBAR: HISTORY & TOOLS --- */
+        #history-sidebar {
+            width: var(--sidebar-width);
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            border-right: 1px solid var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+        }
+
+        .sidebar-header {
+            padding: 2rem 1.5rem;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .logo-box {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .logo-box h1 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+            letter-spacing: 0.05em;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-main);
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--accent-blue);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            background: var(--accent-blue);
+            color: #000;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background: #7dd3fc;
+        }
+
+        .btn-success {
+            background: #10b98122;
+            border-color: #10b98144;
+            color: #4ade80;
+        }
+
+        .btn-success:hover {
+            background: #10b98133;
+            border-color: #4ade80;
+        }
+
+        .history-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+
+        .history-item {
+            padding: 1rem;
+            border-radius: 14px;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            font-size: 0.85rem;
+            border: 1px solid transparent;
+            transition: 0.2s;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .history-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .history-item.active {
+            background: rgba(56, 189, 248, 0.1);
+            border-color: rgba(56, 189, 248, 0.3);
+            color: var(--accent-blue);
+        }
+
+        .history-label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 0.2rem;
+        }
+
+        .history-preview {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* --- CENTER: CHAT INTERFACE --- */
+        #main-chat {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        header {
+            padding: 1.5rem 2.5rem;
+            background: rgba(13, 17, 23, 0.5);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-pill {
+            padding: 0.4rem 0.8rem;
+            border-radius: 99px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-idle {
+            background: rgba(148, 163, 184, 0.1);
+            color: var(--text-dim);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        .status-detected {
+            background: rgba(248, 113, 113, 0.1);
+            color: var(--accent-red);
+            border: 1px solid rgba(248, 113, 113, 0.2);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(248, 113, 113, 0.4);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(248, 113, 113, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(248, 113, 113, 0);
+            }
+        }
+
+        #messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            scroll-behavior: smooth;
+        }
+
+        .bubble {
+            max-width: 70%;
+            padding: 1.25rem 1.5rem;
+            border-radius: 20px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            position: relative;
+            animation: slideUp 0.3s cubic-bezier(0, 0, 0.2, 1);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .scammer {
+            align-self: flex-end;
+            background: var(--scammer-bubble);
+            border-bottom-right-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .agent {
+            align-self: flex-start;
+            background: var(--agent-bubble);
+            border-bottom-left-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .bubble-meta {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--text-dim);
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.05em;
+        }
+
+        #input-area {
+            padding: 2rem 2.5rem;
+            background: var(--glass-bg);
+            border-top: 1px solid var(--glass-border);
+            display: flex;
+            gap: 1rem;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        input {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+            background: #0d1117;
+            color: white;
+            outline: none;
+            font-size: 1rem;
+            transition: 0.2s;
+        }
+
+        input:focus {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.1);
+        }
+
+        .send-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 16px;
+            border: none;
+            background: var(--accent-blue);
+            color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.05);
+            background: #7dd3fc;
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            filter: grayscale(1);
+        }
+
+        /* --- RIGHT SIDEBAR: INTELLIGENCE --- */
+        #intel-panel {
+            width: var(--panel-width);
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            border-left: 1px solid var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .panel-section {
+            padding: 2rem 1.5rem;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .panel-section h3 {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .intel-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .intel-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            padding: 1rem;
+            border-radius: 14px;
+            font-size: 0.85rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .intel-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+        }
+
+        .type-upi::before {
+            background: #f59e0b;
+        }
+
+        .type-phone::before {
+            background: #10b981;
+        }
+
+        .type-url::before {
+            background: #ee4444;
+        }
+
+        .intel-tag {
+            font-size: 0.65rem;
+            font-weight: 800;
+            color: var(--text-dim);
+            margin-bottom: 0.4rem;
+        }
+
+        .intel-val {
+            font-family: monospace;
+            color: var(--text-main);
+            word-break: break-all;
+        }
+
+        .typing {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-bottom: 1rem;
+            padding-left: 2.5rem;
+            display: none;
+            font-style: italic;
+        }
+
+        #empty-hint {
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            margin-top: 2rem;
+            padding: 2rem;
+            border: 2px dashed var(--glass-border);
+            border-radius: 12px;
+        }
+
+        .footer-note {
+            padding: 1.5rem;
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            text-align: center;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- LEFT: HISTORY SIDEBAR -->
+    <div id="history-sidebar">
+        <div class="sidebar-header">
+            <div class="logo-box">
+                <span style="font-size: 1.5rem;">🍯</span>
+                <h1>HONEYPOT OS</h1>
+            </div>
+            <button class="btn btn-primary" onclick="startNewSession()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                New Debug Session
+            </button>
+            <button class="btn" style="margin-top: 5px;" onclick="clearHistory()">Wipe History</button>
+        </div>
+        <div id="history-list" class="history-list">
+            <!-- chats will live here -->
+        </div>
+        <div class="footer-note">Handcrafted with ❤️ for Hackathon</div>
+    </div>
+
+    <!-- MIDDLE: CHAT CONSOLE -->
+    <div id="main-chat">
+        <header>
+            <div>
+                <div style="font-weight: 600; font-size: 0.95rem;">Operational Terminal</div>
+                <div id="session-id-display" style="font-size: 0.75rem; color: var(--text-dim); margin-top: 2px;">No
+                    Active Session</div>
+            </div>
+            <div id="status-container">
+                <div id="status-pill" class="status-pill status-idle">
+                    <span style="width: 8px; height: 8px; border-radius: 50%; background: currentColor;"></span>
+                    Monitor Active
+                </div>
+            </div>
+        </header>
+
+        <div id="messages">
+            <!-- messages go here -->
+        </div>
+
+        <div id="typing-indicator" class="typing">
+            Agent is typing a realistic response...
+        </div>
+
+        <div id="input-area">
+            <div class="input-wrapper">
+                <input type="text" id="user-input" placeholder="Enter scam prompt (e.g. 'Verify your UPI')"
+                    autocomplete="off">
+            </div>
+            <button id="send-btn" class="send-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- RIGHT: INTEL DASHBOARD -->
+    <div id="intel-panel">
+        <div class="panel-section">
+            <button class="btn btn-success" onclick="downloadEverything()">
+                📥 Download Evidence Vault
+            </button>
+        </div>
+
+        <div class="panel-section">
+            <h3>Live Session Intel</h3>
+            <div id="session-intel" class="intel-list">
+                <div id="empty-hint">Waiting for extraction patterns...</div>
+            </div>
+        </div>
+
+        <div class="panel-section">
+            <h3>Intelligence Vault <span style="font-size: 10px; opacity:0.5; cursor:pointer;"
+                    onclick="clearVault()">[Clear]</span></h3>
+            <div id="master-intel" class="intel-list">
+                <!-- accumulated bad-guy info -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * HUMANS READ THIS: 
+         * This script handles the websocket-less chat simulation.
+         * It talks to our local Node.js API. 
+         * Persistence is handled via localStorage so your test runs 
+         * aren't lost when you refresh like a normal dev tool.
+         */
+
+        const API_URL = 'http://localhost:3000/api/honeypot';
+        const API_KEY = 'k1s23456'; // default key
+
+        let currentSession = null;
+
+        // --- CORE FUNCTIONS ---
+
+        function init() {
+            // grab the last active session or start fresh
+            const history = getSavedSessions();
+            if (history.length > 0) {
+                loadSession(history[0].id);
+            } else {
+                startNewSession();
+            }
+            renderMasterVault();
+        }
+
+        function startNewSession() {
+            const sid = 'HP-' + Math.random().toString(36).substring(2, 7).toUpperCase();
+            const session = {
+                id: sid,
+                history: [
+                    { sender: 'agent', text: 'System initialized. Persona is set to naive mode. Listening for incoming messages...', time: new Date() }
+                ],
+                intel: { upiIds: [], phoneNumbers: [], bankAccounts: [], phishingLinks: [] },
+                scammed: false,
+                timestamp: new Date()
+            };
+
+            saveSession(session);
+            loadSession(sid);
+        }
+
+        async function onSend() {
+            const input = document.getElementById('user-input');
+            const text = input.value.trim();
+            if (!text || !currentSession) return;
+
+            // push user msg to local state
+            const msg = { sender: 'scammer', text, time: new Date() };
+            currentSession.history.push(msg);
+            renderMessages();
+            input.value = '';
+
+            setBusy(true);
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'x-api-key': API_KEY },
+                    body: JSON.stringify({
+                        sessionId: currentSession.id,
+                        message: msg,
+                        conversationHistory: currentSession.history.slice(0, -1)
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    // Update session with what server found
+                    if (data.agentResponse) {
+                        currentSession.history.push({
+                            sender: 'agent',
+                            text: data.agentResponse,
+                            time: new Date()
+                        });
+                    }
+
+                    currentSession.scammed = data.scamDetected;
+                    currentSession.intel = data.extractedIntelligence;
+
+                    saveSession(currentSession);
+                    updateVaultFromSession(data.extractedIntelligence);
+
+                    renderMessages();
+                    renderIntel();
+                    renderHistoryList();
+                    updateStatus(data.scamDetected);
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Server down? Make sure your Node.js backend is running!");
+            } finally {
+                setBusy(false);
+            }
+        }
+
+        // --- SUB-SYNC HELPERS ---
+
+        function updateVaultFromSession(newIntel) {
+            const vault = JSON.parse(localStorage.getItem('hp_vault') || '{"upiIds":[], "phoneNumbers":[], "phishingLinks":[], "bankAccounts":[]}');
+
+            Object.keys(newIntel).forEach(key => {
+                if (Array.isArray(vault[key]) && Array.isArray(newIntel[key])) {
+                    const combined = new Set([...vault[key], ...newIntel[key]]);
+                    vault[key] = Array.from(combined);
+                }
+            });
+
+            localStorage.setItem('hp_vault', JSON.stringify(vault));
+            renderMasterVault();
+        }
+
+        // --- UI RENDERING ---
+
+        function renderMessages() {
+            const container = document.getElementById('messages');
+            container.innerHTML = '';
+
+            currentSession.history.forEach(m => {
+                const div = document.createElement('div');
+                div.className = `bubble ${m.sender}`;
+                div.innerHTML = `
+                    <div class="bubble-meta">${m.sender === 'scammer' ? 'DETECTED THREAT' : 'HONEYPOT AGENT'}</div>
+                    <div>${m.text}</div>
+                `;
+                container.appendChild(div);
+            });
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function renderIntel() {
+            const container = document.getElementById('session-intel');
+            const intel = currentSession.intel;
+
+            container.innerHTML = '';
+            const cards = buildIntelCards(intel);
+
+            if (cards.length === 0) {
+                container.innerHTML = '<div id="empty-hint">Waiting for patterns...</div>';
+            } else {
+                cards.forEach(c => container.appendChild(c));
+            }
+        }
+
+        function renderMasterVault() {
+            const container = document.getElementById('master-intel');
+            const vault = JSON.parse(localStorage.getItem('hp_vault') || '{}');
+
+            container.innerHTML = '';
+            const cards = buildIntelCards(vault);
+
+            if (cards.length === 0) {
+                container.innerHTML = '<div style="font-size: 0.75rem; color: var(--text-dim); opacity:0.5;">Vault is dry.</div>';
+            } else {
+                cards.forEach(c => container.appendChild(c));
+            }
+        }
+
+        function buildIntelCards(intel) {
+            const cards = [];
+            const mapping = [
+                { key: 'upiIds', label: 'UPI ID', cls: 'type-upi' },
+                { key: 'phoneNumbers', label: 'MOBILE', cls: 'type-phone' },
+                { key: 'phishingLinks', label: 'BAD URL', cls: 'type-url' },
+                { key: 'bankAccounts', label: 'BANK ACC', cls: 'type-phone' }
+            ];
+
+            mapping.forEach(m => {
+                if (intel[m.key]) {
+                    intel[m.key].forEach(val => {
+                        const div = document.createElement('div');
+                        div.className = `intel-card ${m.cls}`;
+                        div.innerHTML = `
+                            <div class="intel-tag">${m.label}</div>
+                            <div class="intel-val">${val}</div>
+                        `;
+                        cards.push(div);
+                    });
+                }
+            });
+            return cards;
+        }
+
+        function renderHistoryList() {
+            const container = document.getElementById('history-list');
+            const sessions = getSavedSessions();
+            container.innerHTML = '';
+
+            sessions.forEach(s => {
+                const div = document.createElement('div');
+                div.className = `history-item ${currentSession && currentSession.id === s.id ? 'active' : ''}`;
+                div.onclick = () => loadSession(s.id);
+
+                const lastMsg = s.history[s.history.length - 1]?.text || 'No interaction';
+                div.innerHTML = `
+                    <span class="history-label">${s.id}</span>
+                    <div class="history-preview">${lastMsg}</div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // --- SYSTEM ACTIONS ---
+
+        function loadSession(id) {
+            const sessions = getSavedSessions();
+            const found = sessions.find(s => s.id === id);
+            if (found) {
+                currentSession = found;
+                document.getElementById('session-id-display').innerText = `Active Trace: #${currentSession.id}`;
+                renderMessages();
+                renderIntel();
+                renderHistoryList();
+                updateStatus(currentSession.scammed);
+            }
+        }
+
+        function updateStatus(isDetected) {
+            const pill = document.getElementById('status-pill');
+            if (isDetected) {
+                pill.className = 'status-pill status-detected';
+                pill.innerHTML = '<span style="width: 8px; height: 8px; border-radius: 50%; background: currentColor;"></span> Threat Detected';
+            } else {
+                pill.className = 'status-pill status-idle';
+                pill.innerHTML = '<span style="width: 8px; height: 8px; border-radius: 50%; background: currentColor;"></span> Monitor Active';
+            }
+        }
+
+        function setBusy(busy) {
+            document.getElementById('send-btn').disabled = busy;
+            document.getElementById('typing-indicator').style.display = busy ? 'block' : 'none';
+        }
+
+        async function downloadEverything() {
+            try {
+                const response = await fetch('http://localhost:3000/api/honeypot/evidence');
+                const data = await response.json();
+                const blob = new Blob([JSON.stringify(data.data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `honeypot_vault_${Date.now()}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            } catch (err) { alert("Couldn't reach server for master backup."); }
+        }
+
+        function getSavedSessions() { return JSON.parse(localStorage.getItem('hp_sessions') || '[]'); }
+        function saveSession(s) {
+            const all = getSavedSessions();
+            const idx = all.findIndex(x => x.id === s.id);
+            if (idx > -1) all[idx] = s;
+            else all.unshift(s);
+            localStorage.setItem('hp_sessions', JSON.stringify(all.slice(0, 50)));
+        }
+
+        function clearHistory() { if (confirm("Wipe all locally saved chat history?")) { localStorage.removeItem('hp_sessions'); startNewSession(); } }
+        function clearVault() { if (confirm("Empty the local intel vault?")) { localStorage.removeItem('hp_vault'); renderMasterVault(); } }
+
+        // LISTENERS
+        document.getElementById('send-btn').addEventListener('click', onSend);
+        document.getElementById('user-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') onSend(); });
+
+        init();
+    </script>
+</body>
+
+</html>

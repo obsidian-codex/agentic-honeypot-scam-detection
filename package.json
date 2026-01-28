@@ -1,0 +1,27 @@
+{
+  "name": "fraud-ai-honeypot",
+  "version": "1.0.0",
+  "description": "AI-powered agentic honeypot for scam detection and intelligence extraction",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "test": "node --test tests/"
+  },
+  "keywords": [
+    "honeypot",
+    "scam-detection",
+    "ai-agent",
+    "fraud-detection"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "axios": "^1.6.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.1",
+    "express": "^4.18.2",
+    "uuid": "^9.0.1"
+  }
+}

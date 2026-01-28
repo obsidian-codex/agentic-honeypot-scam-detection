@@ -1,0 +1,693 @@
+{
+  "sessions": {
+    "honeypot_x9fwl7r1o": {
+      "sessionId": "honeypot_x9fwl7r1o",
+      "scamDetected": true,
+      "scamType": "lottery",
+      "persona": "Naive User",
+      "conversationHistory": [
+        {
+          "sender": "agent",
+          "text": "System Ready. I am listening for scam attempts.",
+          "timestamp": "2026-01-28T07:16:50.488Z"
+        },
+        {
+          "sender": "scammer",
+          "text": "you won a lottery",
+          "timestamp": "2026-01-28T07:16:57.612Z"
+        },
+        {
+          "sender": "agent",
+          "text": "OMG really?? ive never won anythng before! How do i claim it",
+          "timestamp": "2026-01-28T07:16:58.931Z"
+        },
+        {
+          "sender": "scammer",
+          "text": "we need to make a file before that give us 1300 on divine@upi and on phpne numbner8383939393",
+          "timestamp": "2026-01-28T07:17:46.986Z"
+        },
+        {
+          "sender": "agent",
+          "text": "OMG really?? ive never won anythng before! How do i claim it",
+          "timestamp": "2026-01-28T07:17:47.687Z"
+        },
+        {
+          "sender": "scammer",
+          "text": "why are u repeating ur message",
+          "timestamp": "2026-01-28T07:18:14.913Z"
+        },
+        {
+          "sender": "agent",
+          "text": "This is amazng!! wat do i need to do?",
+          "timestamp": "2026-01-28T07:18:15.640Z"
+        }
+      ],
+      "extractedIntelligence": {
+        "bankAccounts": [],
+        "upiIds": [
+          "divine@upi"
+        ],
+        "phishingLinks": [],
+        "phoneNumbers": [
+          "8383939393"
+        ],
+        "suspiciousKeywords": [
+          "won",
+          "lottery",
+          "upi"
+        ]
+      },
+      "startTime": 1769584618170,
+      "messageCount": 6,
+      "isComplete": false,
+      "callbackSent": false,
+      "lastUpdated": "2026-01-28T07:18:15.640Z"
+    },
+    "honeypot_qiyx4jyj6": {
+      "sessionId": "honeypot_qiyx4jyj6",
+      "scamDetected": false,
+      "scamType": null,
+      "persona": null,
+      "conversationHistory": [
+        {
+          "sender": "agent",
+          "text": "System Ready. I am listening for scam attempts.",
+          "timestamp": "2026-01-28T07:27:48.184Z"
+        },
+        {
+          "sender": "scammer",
+          "text": "hi u jave ur kyc pending",
+          "timestamp": "2026-01-28T07:28:04.021Z"
+        },
+        {
+          "sender": "scammer",
+          "text": "you have one a lottery",
+          "timestamp": "2026-01-28T07:28:17.426Z"
+        }
+      ],
+      "extractedIntelligence": {
+        "bankAccounts": [],
+        "upiIds": [],
+        "phishingLinks": [],
+        "phoneNumbers": [],
+        "suspiciousKeywords": [
+          "kyc",
+          "lottery"
+        ]
+      },
+      "startTime": 1769585284047,
+      "messageCount": 2,
+      "isComplete": false,
+      "callbackSent": false,
+      "lastUpdated": "2026-01-28T07:28:18.218Z"
+    },
+    "test_1769585471280": {
+      "sessionId": "test_1769585471280",
+      "scamDetected": true,
+      "scamType": "lottery",
+      "persona": "Naive User",
+      "conversationHistory": [
+        {
+          "sender": "scammer",
+          "text": "You won a lottery! How do you want to pay the fee?",
+          "timestamp": "2026-01-28T07:31:12.132Z"
+        },
+        {
+          "sender": "agent",
+          "text": "omg omg this is so exciting!! how do i get my prize",
+          "timestamp": "2026-01-28T07:31:12.132Z"
+        },
+        {
+          "sender": "scammer",
+          "text": "Send it to my UPI: scammer@okicici",
+          "timestamp": "2026-01-28T07:31:22.375Z"
+        }
+      ],
+      "extractedIntelligence": {
+        "bankAccounts": [],
+        "upiIds": [
+          "scammer@okicici"
+        ],
+        "phishingLinks": [],
+        "phoneNumbers": [],
+        "suspiciousKeywords": [
+          "pay",
+          "won",
+          "lottery",
+          "upi"
+        ]
+      },
+      "startTime": 1769585471317,
+      "messageCount": 3,
+      "isComplete": true,
+      "callbackSent": false,
+      "lastUpdated": "2026-01-28T07:31:22.375Z"
+    },
+    "test_1769585496132": {
+      "sessionId": "test_1769585496132",
+      "scamDetected": true,
+      "scamType": "lottery",
+      "persona": "Elderly Person",
+      "conversationHistory": [
+        {
+          "sender": "scammer",
+          "text": "You won a lottery! How do you want to pay the fee?",
+          "timestamp": "2026-01-28T07:31:36.709Z"
+        },
+        {
+          "sender": "agent",
+          "text": "i cant believe it!! whats the next step",
+          "timestamp": "2026-01-28T07:31:36.709Z"
+        },
+        {
+          "sender": "scammer",
+          "text": "Send it to my UPI: scammer@okicici",
+          "timestamp": "2026-01-28T07:31:47.285Z"
+        }
+      ],
+      "extractedIntelligence": {
+        "bankAccounts": [],
+        "upiIds": [
+          "scammer@okicici"
+        ],
+        "phishingLinks": [],
+        "phoneNumbers": [],
+        "suspiciousKeywords": [
+          "pay",
+          "won",
+          "lottery",
+          "upi"
+        ]
+      },
+      "startTime": 1769585496157,
+      "messageCount": 3,
+      "isComplete": true,
+      "callbackSent": false,
+      "lastUpdated": "2026-01-28T07:31:47.285Z"
+    },
+    "final_test_1769585607884": {
+      "sessionId": "final_test_1769585607884",
+      "scamDetected": true,
+      "scamType": "lottery",
+      "persona": "Naive User",
+      "conversationHistory": [
+        {
+          "sender": "scammer",
+          "text": "You won a prize! How can I send it to you?",
+          "timestamp": "2026-01-28T07:33:28.836Z"
+        },
+        {
+          "sender": "agent",
+          "text": "i cant believe it!! whats the next step",
+          "timestamp": "2026-01-28T07:33:28.836Z"
+        },
+        {
+          "sender": "scammer",
+          "text": "Send Rs. 500 to upi: verify@xyzbank",
+          "timestamp": "2026-01-28T07:33:38.956Z"
+        }
+      ],
+      "extractedIntelligence": {
+        "bankAccounts": [],
+        "upiIds": [
+          "verify@xyzbank"
+        ],
+        "phishingLinks": [],
+        "phoneNumbers": [],
+        "suspiciousKeywords": [
+          "won",
+          "prize",
+          "rs",
+          "verify",
+          "bank",
+          "upi"
+        ]
+      },
+      "startTime": 1769585607926,
+      "messageCount": 3,
+      "isComplete": true,
+      "callbackSent": false,
+      "lastUpdated": "2026-01-28T07:33:38.956Z"
+    },
+    "honeypot_dett6i2wv": {
+      "sessionId": "honeypot_dett6i2wv",
+      "scamDetected": true,
+      "scamType": "lottery",
+      "persona": "Elderly Person",
+      "conversationHistory": [
+        {
+          "sender": "agent",
+          "text": "System Ready. I am listening for scam attempts.",
+          "timestamp": "2026-01-28T07:34:07.845Z"
+        },
+        {
+          "sender": "scammer",
+          "text": "you won a lottery",
+          "timestamp": "2026-01-28T07:34:18.200Z"
+        },
+        {
+          "sender": "agent",
+          "text": "This is amazng!! wat do i need to do?",
+          "timestamp": "2026-01-28T07:34:18.712Z"
+        },
+        {
+          "sender": "scammer",
+          "text": "i will send u the details and u have to  pay me money",
+          "timestamp": "2026-01-28T07:34:51.414Z"
+        },
+        {
+          "sender": "agent",
+          "text": "i cant believe it!! whats the next step",
+          "timestamp": "2026-01-28T07:34:52.126Z"
+        },
+        {
+          "sender": "scammer",
+          "text": "683839282@upi send money here",
+          "timestamp": "2026-01-28T07:35:03.728Z"
+        }
+      ],
+      "extractedIntelligence": {
+        "bankAccounts": [
+          "683839282"
+        ],
+        "upiIds": [
+          "683839282@upi"
+        ],
+        "phishingLinks": [],
+        "phoneNumbers": [],
+        "suspiciousKeywords": [
+          "won",
+          "lottery",
+          "pay",
+          "send money",
+          "upi"
+        ]
+      },
+      "startTime": 1769585658208,
+      "messageCount": 5,
+      "isComplete": true,
+      "callbackSent": false,
+      "lastUpdated": "2026-01-28T07:35:04.320Z"
+    },
+    "HP-QHPNI": {
+      "sessionId": "HP-QHPNI",
+      "scamDetected": true,
+      "scamType": "lottery",
+      "persona": "Naive User",
+      "conversationHistory": [
+        {
+          "sender": "agent",
+          "text": "System initialized. Persona is set to naive mode. Listening for incoming messages...",
+          "time": "2026-01-28T07:37:49.289Z"
+        },
+        {
+          "sender": "scammer",
+          "text": "hi u won a lottery",
+          "timestamp": "2026-01-28T07:38:03.183Z"
+        },
+        {
+          "sender": "agent",
+          "text": "i cant believe it!! whats the next step",
+          "timestamp": "2026-01-28T07:38:03.183Z"
+        },
+        {
+          "sender": "scammer",
+          "text": "send  me money on 7373@upi",
+          "timestamp": "2026-01-28T07:38:25.572Z"
+        }
+      ],
+      "extractedIntelligence": {
+        "bankAccounts": [],
+        "upiIds": [
+          "7373@upi"
+        ],
+        "phishingLinks": [],
+        "phoneNumbers": [],
+        "suspiciousKeywords": [
+          "won",
+          "lottery",
+          "upi"
+        ]
+      },
+      "startTime": 1769585882359,
+      "messageCount": 3,
+      "isComplete": true,
+      "callbackSent": false,
+      "lastUpdated": "2026-01-28T07:38:25.572Z"
+    },
+    "HP-D31EU": {
+      "sessionId": "HP-D31EU",
+      "scamDetected": true,
+      "scamType": "bank_fraud",
+      "persona": "Elderly Person",
+      "conversationHistory": [
+        {
+          "sender": "agent",
+          "text": "System initialized. Persona is set to naive mode. Listening for incoming messages...",
+          "time": "2026-01-28T07:38:31.191Z"
+        },
+        {
+          "sender": "scammer",
+          "text": "hi you won a lotttery",
+          "time": "2026-01-28T07:38:57.265Z"
+        },
+        {
+          "sender": "scammer",
+          "text": "hi you won a lottery",
+          "time": "2026-01-28T07:39:04.865Z"
+        },
+        {
+          "sender": "agent",
+          "text": "This is amazng!! wat do i need to do?",
+          "time": "2026-01-28T07:39:15.599Z"
+        },
+        {
+          "sender": "scammer",
+          "text": "484949@upi pay me",
+          "time": "2026-01-28T07:39:39.648Z"
+        },
+        {
+          "sender": "scammer",
+          "text": "verify your upi",
+          "timestamp": "2026-01-28T07:59:43.305Z"
+        },
+        {
+          "sender": "agent",
+          "text": "omg i didnt know abt this.. how to unblock it",
+          "timestamp": "2026-01-28T07:59:43.305Z"
+        }
+      ],
+      "extractedIntelligence": {
+        "bankAccounts": [],
+        "upiIds": [],
+        "phishingLinks": [],
+        "phoneNumbers": [],
+        "suspiciousKeywords": [
+          "verify",
+          "upi"
+        ]
+      },
+      "startTime": 1769587183066,
+      "messageCount": 2,
+      "isComplete": false,
+      "callbackSent": false,
+      "lastUpdated": "2026-01-28T07:59:43.305Z"
+    },
+    "test-001": {
+      "sessionId": "test-001",
+      "scamDetected": true,
+      "scamType": "upi_fraud",
+      "persona": null,
+      "conversationHistory": [
+        {
+          "sender": "scammer",
+          "text": "You won lottery! Send Rs.500 to claim. UPI: winner@paytm",
+          "timestamp": "2024-01-28T10:00:00Z"
+        }
+      ],
+      "extractedIntelligence": {
+        "bankAccounts": [],
+        "upiIds": [
+          "winner@paytm"
+        ],
+        "phishingLinks": [],
+        "phoneNumbers": [],
+        "suspiciousKeywords": [
+          "pay",
+          "rs",
+          "won",
+          "winner",
+          "lottery",
+          "upi",
+          "paytm"
+        ]
+      },
+      "startTime": 1769586469055,
+      "messageCount": 1,
+      "isComplete": true,
+      "callbackSent": false,
+      "lastUpdated": "2026-01-28T07:47:49.643Z"
+    },
+    "test-demo": {
+      "sessionId": "test-demo",
+      "scamDetected": true,
+      "scamType": "phishing",
+      "persona": null,
+      "conversationHistory": [
+        {
+          "sender": "scammer",
+          "text": "Your bank account blocked! Click http://verify-bank.xyz to fix. Call 9876543210 urgently!",
+          "timestamp": "2024-01-28T10:00:00Z"
+        }
+      ],
+      "extractedIntelligence": {
+        "bankAccounts": [],
+        "upiIds": [],
+        "phishingLinks": [
+          "http://verify-bank.xyz"
+        ],
+        "phoneNumbers": [
+          "9876543210"
+        ],
+        "suspiciousKeywords": [
+          "urgent",
+          "verify",
+          "blocked",
+          "account",
+          "bank"
+        ]
+      },
+      "startTime": 1769586531232,
+      "messageCount": 1,
+      "isComplete": true,
+      "callbackSent": false,
+      "lastUpdated": "2026-01-28T07:48:51.232Z"
+    },
+    "gemini-test-001": {
+      "sessionId": "gemini-test-001",
+      "scamDetected": true,
+      "scamType": "upi_fraud",
+      "persona": null,
+      "conversationHistory": [
+        {
+          "sender": "scammer",
+          "text": "Congratulations! You have won 50000 rupees lottery! Send Rs 500 to claim prize. My UPI is lucky@oksbi",
+          "timestamp": "2024-01-28T10:00:00Z"
+        }
+      ],
+      "extractedIntelligence": {
+        "bankAccounts": [],
+        "upiIds": [
+          "lucky@oksbi"
+        ],
+        "phishingLinks": [],
+        "phoneNumbers": [],
+        "suspiciousKeywords": [
+          "rupees",
+          "rs",
+          "won",
+          "lottery",
+          "prize",
+          "lucky",
+          "upi"
+        ]
+      },
+      "startTime": 1769587118205,
+      "messageCount": 1,
+      "isComplete": true,
+      "callbackSent": false,
+      "lastUpdated": "2026-01-28T07:58:38.606Z"
+    },
+    "gemini-test-002": {
+      "sessionId": "gemini-test-002",
+      "scamDetected": true,
+      "scamType": "none",
+      "persona": null,
+      "conversationHistory": [
+        {
+          "sender": "scammer",
+          "timestamp": "2024-01-28T10:00:00Z",
+          "text": "You won lottery! Send Rs 500 to claim."
+        },
+        {
+          "sender": "agent",
+          "timestamp": "2024-01-28T10:00:05Z",
+          "text": "omg really?? i never won anything b4!!"
+        },
+        {
+          "sender": "scammer",
+          "text": "Yes madam ji, just send 500 rupees to my paytm number 9876543210 and you will get 50000 back. Very simple process.",
+          "timestamp": "2024-01-28T10:01:00Z"
+        }
+      ],
+      "extractedIntelligence": {
+        "bankAccounts": [],
+        "upiIds": [],
+        "phishingLinks": [],
+        "phoneNumbers": [
+          "9876543210"
+        ],
+        "suspiciousKeywords": [
+          "pay",
+          "rupees",
+          "paytm"
+        ]
+      },
+      "startTime": 1769587133155,
+      "messageCount": 1,
+      "isComplete": true,
+      "callbackSent": false,
+      "lastUpdated": "2026-01-28T07:58:53.699Z"
+    },
+    "lottery-test": {
+      "sessionId": "lottery-test",
+      "scamDetected": true,
+      "scamType": "lottery",
+      "persona": "Naive User",
+      "conversationHistory": [
+        {
+          "sender": "scammer",
+          "text": "Congratulations! You won Rs 1 crore lottery! Call now to claim your prize!",
+          "timestamp": "2024-01-28T10:00:00Z"
+        },
+        {
+          "sender": "agent",
+          "text": "i cant believe it!! whats the next step",
+          "timestamp": "2026-01-28T08:09:43.291Z"
+        }
+      ],
+      "extractedIntelligence": {
+        "bankAccounts": [],
+        "upiIds": [],
+        "phishingLinks": [],
+        "phoneNumbers": [],
+        "suspiciousKeywords": [
+          "now",
+          "rs",
+          "won",
+          "lottery",
+          "prize"
+        ]
+      },
+      "startTime": 1769587782604,
+      "messageCount": 2,
+      "isComplete": false,
+      "callbackSent": false,
+      "lastUpdated": "2026-01-28T08:09:43.291Z"
+    },
+    "upi-test": {
+      "sessionId": "upi-test",
+      "scamDetected": true,
+      "scamType": "upi_fraud",
+      "persona": null,
+      "conversationHistory": [
+        {
+          "sender": "scammer",
+          "text": "Your UPI account needs verification. Send Rs 10 to verify@paytm immediately or account will be blocked",
+          "timestamp": "2024-01-28T10:00:00Z"
+        }
+      ],
+      "extractedIntelligence": {
+        "bankAccounts": [],
+        "upiIds": [
+          "verify@paytm"
+        ],
+        "phishingLinks": [],
+        "phoneNumbers": [],
+        "suspiciousKeywords": [
+          "immediately",
+          "pay",
+          "rs",
+          "verify",
+          "blocked",
+          "account",
+          "upi",
+          "paytm"
+        ]
+      },
+      "startTime": 1769587802224,
+      "messageCount": 1,
+      "isComplete": true,
+      "callbackSent": false,
+      "lastUpdated": "2026-01-28T08:10:02.805Z"
+    },
+    "phishing-test": {
+      "sessionId": "phishing-test",
+      "scamDetected": true,
+      "scamType": "phishing",
+      "persona": null,
+      "conversationHistory": [
+        {
+          "sender": "scammer",
+          "text": "Your bank account is blocked! Click this link to verify: http://secure-bank-verify.xyz/login",
+          "timestamp": "2024-01-28T10:00:00Z"
+        }
+      ],
+      "extractedIntelligence": {
+        "bankAccounts": [],
+        "upiIds": [],
+        "phishingLinks": [
+          "http://secure-bank-verify.xyz/login"
+        ],
+        "phoneNumbers": [],
+        "suspiciousKeywords": [
+          "verify",
+          "blocked",
+          "account",
+          "bank"
+        ]
+      },
+      "startTime": 1769587806450,
+      "messageCount": 1,
+      "isComplete": true,
+      "callbackSent": false,
+      "lastUpdated": "2026-01-28T08:10:06.595Z"
+    }
+  },
+  "masterIntel": {
+    "upiIds": [
+      "divine@upi",
+      "scammer@okicici",
+      "verify@xyzbank",
+      "683839282@upi",
+      "7373@upi",
+      "484949@upi",
+      "winner@paytm",
+      "lucky@oksbi",
+      "verify@paytm"
+    ],
+    "phoneNumbers": [
+      "8383939393",
+      "9876543210"
+    ],
+    "bankAccounts": [
+      "683839282"
+    ],
+    "phishingLinks": [
+      "http://verify-bank.xyz",
+      "http://secure-bank-verify.xyz/login"
+    ],
+    "suspiciousKeywords": [
+      "won",
+      "lottery",
+      "upi",
+      "kyc",
+      "pay",
+      "prize",
+      "rs",
+      "verify",
+      "bank",
+      "send money",
+      "winner",
+      "paytm",
+      "urgent",
+      "blocked",
+      "account",
+      "rupees",
+      "lucky",
+      "now",
+      "immediately"
+    ]
+  },
+  "totalScamsDetected": 14
+}
