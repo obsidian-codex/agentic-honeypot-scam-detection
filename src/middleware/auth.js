@@ -6,7 +6,8 @@
 const logger = require('../utils/logger');
 
 function authMiddleware(req, res, next) {
-    const providedKey = req.headers['x-api-key'];
+    // Check both lowercase and uppercase header variations for compatibility
+    const providedKey = req.headers['x-api-key'] || req.headers['X-API-KEY'];
     const expectedKey = process.env.API_SECRET_KEY;
 
     // no key provided

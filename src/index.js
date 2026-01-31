@@ -18,10 +18,19 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // -- Middleware setup --
-// order matters here! cors needs to come first
+// order matters here! cors and OPTIONS bypass need to come first
 
 app.use(cors()); // allow requests from anywhere for now
 app.use(express.json({ limit: '10mb' })); // parse json, 10mb should be enough
+
+// IMPORTANT: OPTIONS preflight bypass - must come before auth middleware
+// This prevents browser CORS preflight requests from getting blocked by auth
+app.use((req, res, next) => {
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+    }
+    next();
+});
 
 // quick logging for debugging - helps to see what's coming in
 app.use((req, res, next) => {
