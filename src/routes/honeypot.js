@@ -25,6 +25,7 @@ router.post('/', async (req, res) => {
     // Default response structure to ensure we never return empty
     let response = {
         status: 'success',
+        reply: null, // Expected by testing system
         scamDetected: false,
         engagementMetrics: {
             engagementDurationSeconds: 0,
@@ -147,6 +148,9 @@ router.post('/', async (req, res) => {
             phoneNumbers: finalSession.extractedIntelligence.phoneNumbers || [],
             suspiciousKeywords: finalSession.extractedIntelligence.suspiciousKeywords || []
         };
+
+        // Set reply field (expected by testing system)
+        response.reply = response.agentResponse;
 
         // Send succesful response
         logger.info('Request processed', { sessionId, status: 'success' });
