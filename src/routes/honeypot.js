@@ -152,9 +152,12 @@ router.post('/', async (req, res) => {
         // Set reply field (expected by testing system)
         response.reply = response.agentResponse;
 
-        // Send succesful response
+        // Send succesful response - ONLY status and reply for GUVI compatibility
         logger.info('Request processed', { sessionId, status: 'success' });
-        return res.json(response);
+        return res.json({
+            status: 'success',
+            reply: response.reply || response.agentResponse || 'Message received'
+        });
 
     } catch (error) {
         logger.error('Critical API Error', { error: error.message, stack: error.stack });
