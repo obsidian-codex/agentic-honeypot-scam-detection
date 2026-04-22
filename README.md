@@ -224,14 +224,14 @@ Open `frontend/index.html` in browser - it connects to the local API and lets yo
 
 ## Features
 
-- ✅ Dual detection (pattern + AI)
-- ✅ Multi-turn conversation handling
-- ✅ Human-like responses with typos/abbreviations
-- ✅ Multiple personas (Naive, Elderly, Buyer)
-- ✅ Auto-stops when enough intel extracted
-- ✅ GUVI callback integration
-- ✅ Evidence persistence
-- ✅ Pretty web dashboard
+-  Dual detection (pattern + AI)
+-  Multi-turn conversation handling
+-  Human-like responses with typos/abbreviations
+-  Multiple personas (Naive, Elderly, Buyer)
+-  Auto-stops when enough intel extracted
+-  GUVI callback integration
+-  Evidence persistence
+-  Pretty web dashboard
 
 ---
 
